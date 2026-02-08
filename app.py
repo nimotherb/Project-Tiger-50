@@ -1,115 +1,788 @@
-import streamlit as st
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-import time
-import os
-import requests
-
-==========================================
-🛠️ 系統基礎設定
-==========================================
-
-st.set_page_config(layout="wide", page_title="天機・虎爺矩陣", page_icon="🐯")
-
-下載中文字型 (為了讓雲端伺服器顯示中文)
-
-font_url = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf"
-font_path = "NotoSansTC-Regular.otf"
-
-if not os.path.exists(font_path):
-with st.spinner("正在下載中文字型..."):
-r = requests.get(font_url)
-with open(font_path, 'wb') as f:
-f.write(r.content)
-
-設定字型
-
-if os.path.exists(font_path):
-font_prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()
-else:
-font_prop = None
-
-CSS 美化
-
-st.markdown("""
-
-<style>
-    .stApp { background-color: #050505; color: #e0e0e0; }
-    h1, h2, h3 { color: #ff0055 !important; text-shadow: 0 0 10px #ff0055; font-family: sans-serif; }
-    div[data-testid="stMetricValue"] { color: #00ff41 !important; text-shadow: 0 0 5px #00ff41; }
-    .stButton>button { border: 2px solid #ff0055; color: #ff0055; background-color: transparent; }
-    .stButton>button:hover { background-color: #ff0055; color: white; }
-</style>
-
-
-""", unsafe_allow_html=True)
-
-==========================================
-🐯 邏輯區
-==========================================
-
-LOOT_TABLE = [
-{"tier": "SSR", "threshold": 90, "name": "天金虎爺・財源廣進", "asset": "https://cdn-icons-png.flaticon.com/512/3554/3554067.png", "msg": "🎉 恭喜發財！虎爺咬錢來囉！", "effect": "balloons"},
-{"tier": "SR",  "threshold": 60, "name": "白銀虎爺・平安順心",   "asset": "https://cdn-icons-png.flaticon.com/512/744/744922.png", "msg": "🍵 平安是福！小人退散。", "effect": "snow"},
-{"tier": "R",   "threshold": 0,  "name": "招財貓貓・廣結善緣",     "asset": "https://cdn-icons-png.flaticon.com/512/616/616554.png", "msg": "🤝 先交個朋友，機會在後頭。", "effect": "none"}
-]
-
-def get_gacha_result(is_cheat):
-score = 100 if is_cheat else np.random.randint(0, 101)
-if score >= 90: return LOOT_TABLE[0]
-elif score >= 60: return LOOT_TABLE[1]
-else: return LOOT_TABLE[2]
-
-def generate_cyber_data():
-hours = np.arange(24)
-traffic = np.random.randint(100, 3000, 24)
-traffic[18:22] = traffic[18:22] * 1.5
-money = traffic * np.random.uniform(0.03, 0.08, 24)
-df = pd.DataFrame({"Hour": hours, "信眾靈壓": traffic, "功德金_Raw": money})
-zodiac = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-df["時辰"] = df["Hour"].apply(lambda h: f"{zodiac[(h+1)//2%12]}時")
-return df
-
-==========================================
-🖥️ 介面區
-==========================================
-
-st.title("🐯 天機・虎爺矩陣 (CYBER TIGER)")
-st.caption("Project 財庫 | 數位孿生監控系統 V1.0")
-
-col1, col2 = st.columns([1, 2])
-with col1:
-st.image("https://cdn-icons-png.flaticon.com/512/4081/4081966.png", width=100)
-cheat_mode = st.toggle("開啟大德模式 (必中 SSR)")
-
-with col2:
-if st.button("🙏 誠心祈求 (擲筊)", use_container_width=True):
-with st.spinner("🔮 虎爺正在嗅聞銅錢的味道..."):
-time.sleep(1.5)
-res = get_gacha_result(cheat_mode)
-if res['effect'] == 'balloons': st.balloons()
-elif res['effect'] == 'snow': st.snow()
-st.success(f"【{res['tier']}】 {res['name']}")
-st.info(res['msg'])
-st.image(res['asset'], width=150)
-
-st.divider()
-
-st.subheader("📊 靈壓戰情室")
-df = generate_cyber_data()
-c1, c2 = st.columns(2)
-c1.metric("今日總靈壓", f"{df['信眾靈壓'].sum():,} 人", "+12%")
-c2.metric("預估功德金", f"NT$ {df['功德金_Raw'].sum():,.1f} 萬", "+5.8%")
-
-fig, ax = plt.subplots(figsize=(10, 4))
-fig.patch.set_facecolor('#0E1117')
-ax.set_facecolor('#0E1117')
-ax.plot(df["Hour"], df["信眾靈壓"], color='#00FF41', marker='o')
-ax.set_title("十二時辰流量監控", color='white', fontproperties=font_prop)
-ax.tick_params(colors='white')
-ax.spines['bottom'].set_color('white')
-ax.spines['left'].set_color('white')
-st.pyplot(fig)
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "mount_file_id": "1nR5l9gWcFMFkbIjeJ0Sxlc6t2CZwt9bo",
+      "authorship_tag": "ABX9TyMN5h4T69JdHh15kNuTzvdQ",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/nimotherb/Project-Tiger-50/blob/main/tiger.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "nGYgd_ClCi03",
+        "outputId": "9b7f691a-d28c-4208-921b-c8b5051d5a1d"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m9.1/9.1 MB\u001b[0m \u001b[31m38.6 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m6.9/6.9 MB\u001b[0m \u001b[31m45.1 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h\u001b[1G\u001b[0K⠙\u001b[1G\u001b[0K⠹\u001b[1G\u001b[0K⠸\u001b[1G\u001b[0K⠼\u001b[1G\u001b[0K⠴\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K⠧\u001b[1G\u001b[0K⠇\u001b[1G\u001b[0K⠏\u001b[1G\u001b[0K⠋\u001b[1G\u001b[0K⠙\u001b[1G\u001b[0K⠹\u001b[1G\u001b[0K⠸\u001b[1G\u001b[0K⠼\u001b[1G\u001b[0K⠴\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K⠧\u001b[1G\u001b[0K⠇\u001b[1G\u001b[0K⠏\u001b[1G\u001b[0K⠋\u001b[1G\u001b[0K⠙\u001b[1G\u001b[0K⠹\u001b[1G\u001b[0K⠸\u001b[1G\u001b[0K⠼\u001b[1G\u001b[0K⠴\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K\n",
+            "added 22 packages in 3s\n",
+            "\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K\n",
+            "\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K3 packages are looking for funding\n",
+            "\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K  run `npm fund` for details\n",
+            "\u001b[1G\u001b[0K⠦\u001b[1G\u001b[0K"
+          ]
+        }
+      ],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "# 1. 安裝 Streamlit\n",
+        "!pip install streamlit -q\n",
+        "\n",
+        "# 2. 下載 Cloudflare Tunnel 工具 (Linux版)\n",
+        "!wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64\n",
+        "!chmod +x cloudflared\n",
+        "\n",
+        "print(\"✅ 環境準備完成，請繼續執行下一步寫入程式碼。\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f-ZWqMbqEx9T",
+        "outputId": "2624c6f0-7e6d-4a78-a608-d4c606bec47a"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ 環境準備完成，請繼續執行下一步寫入程式碼。\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "# 下載 Google Noto Sans TC 字型 (確保圖表中文顯示正常)\n",
+        "!wget -q -O NotoSansTC-Regular.otf https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf\n",
+        "print(\"✅ 中文字型準備完成！\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "d05fjl-WQjjY",
+        "outputId": "f8e217e3-c25e-4d87-fd25-2f001d446575"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ 中文字型準備完成！\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "%%writefile app.py\n",
+        "import streamlit as st\n",
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "import matplotlib.font_manager as fm\n",
+        "import time\n",
+        "import os\n",
+        "\n",
+        "# ==========================================\n",
+        "# 🛠️ 系統基礎設定\n",
+        "# ==========================================\n",
+        "# 設定中文字型\n",
+        "font_path = 'NotoSansTC-Regular.otf'\n",
+        "if os.path.exists(font_path):\n",
+        "    font_prop = fm.FontProperties(fname=font_path)\n",
+        "    plt.rcParams['font.family'] = font_prop.get_name()\n",
+        "else:\n",
+        "    font_prop = None # Fallback\n",
+        "\n",
+        "st.set_page_config(layout=\"wide\", page_title=\"天機・虎爺矩陣 V4.1\", page_icon=\"🐯\")\n",
+        "\n",
+        "# 賽博龐克 CSS (維持不變)\n",
+        "st.markdown(\"\"\"\n",
+        "<style>\n",
+        "    .stApp { background-color: #050505; color: #e0e0e0; }\n",
+        "    h1, h2, h3 { color: #ff0055 !important; text-shadow: 0 0 10px #ff0055; font-family: 'Microsoft JhengHei', sans-serif; }\n",
+        "    div[data-testid=\"stMetricValue\"] { color: #00ff41 !important; text-shadow: 0 0 5px #00ff41; }\n",
+        "    /* 讓圖片容器自動適應，不強制縮小 */\n",
+        "    img { max-width: 100%; height: auto; }\n",
+        "</style>\n",
+        "\"\"\", unsafe_allow_html=True)\n",
+        "\n",
+        "# ==========================================\n",
+        "# 🐯 1. 扭蛋系統 (Gacha)\n",
+        "# ==========================================\n",
+        "LOOT_TABLE = [\n",
+        "    {\"tier\": \"SSR\", \"threshold\": 95, \"name\": \"天金虎爺・財源廣進\", \"asset\": \"tiger_ssr.jpg\", \"msg\": \"🎉 恭喜發財！虎爺賜你金元寶！\", \"effect\": \"balloons\"},\n",
+        "    {\"tier\": \"SR\",  \"threshold\": 80, \"name\": \"白銀虎爺・平安順心\",   \"asset\": \"tiger_sr.jpg\", \"msg\": \"🍵 平安是福！虎爺保佑你萬事如意。\", \"effect\": \"snow\"},\n",
+        "    {\"tier\": \"R\",   \"threshold\": 20, \"name\": \"青銅虎爺・廣結善緣\",     \"asset\": \"tiger_r.jpg\", \"msg\": \"🤝 結好緣！人脈就是錢脈。\", \"effect\": \"none\"},\n",
+        "    {\"tier\": \"FAIL\",\"threshold\": 0,  \"name\": \"空氣・虎爺去散步了\",         \"asset\": \"https://cdn-icons-png.flaticon.com/512/744/744922.png\", \"msg\": \"💤 虎爺不在家，請稍後再試...\", \"effect\": \"error\"}\n",
+        "]\n",
+        "\n",
+        "def get_gacha_result(score):\n",
+        "    sorted_table = sorted(LOOT_TABLE, key=lambda x: x['threshold'], reverse=True)\n",
+        "    for loot in sorted_table:\n",
+        "        if score >= loot['threshold']: return loot\n",
+        "    return LOOT_TABLE[-1]\n",
+        "\n",
+        "# ==========================================\n",
+        "# 📊 2. 數據生成與繪圖 (Data & Plot)\n",
+        "# ==========================================\n",
+        "def generate_cyber_data():\n",
+        "    hours = np.arange(24)\n",
+        "    # 模擬人流 (高峰 2500人)\n",
+        "    mu, sigma = 14, 3.5\n",
+        "    base_curve = np.exp(-((hours - mu)**2) / (2 * sigma**2))\n",
+        "    traffic = (base_curve * 2500) + np.random.normal(0, 50, 24) + 300\n",
+        "    traffic = np.maximum(traffic, 0).astype(int)\n",
+        "\n",
+        "    # 模擬金流 (單位：萬元)\n",
+        "    # 假設每人平均貢獻 300-800 元，換算成「萬元」\n",
+        "    money_raw = traffic * np.random.uniform(300, 800, 24)\n",
+        "    money_wan = money_raw / 10000 # 轉為「萬元」\n",
+        "\n",
+        "    df = pd.DataFrame({\"Hour\": hours, \"信眾靈壓\": traffic, \"功德金_Raw\": money_wan})\n",
+        "\n",
+        "    # 單位格式化欄位 (給表格用)\n",
+        "    df[\"靈壓(人)\"] = df[\"信眾靈壓\"].apply(lambda x: f\"{x:,} 人\")\n",
+        "    df[\"功德(萬)\"] = df[\"功德金_Raw\"].apply(lambda x: f\"NT$ {x:,.1f} 萬\")\n",
+        "\n",
+        "    # 時段與時辰\n",
+        "    def get_period(h):\n",
+        "        if 5 <= h < 13: return \"陽初 (早)\"\n",
+        "        elif 13 <= h < 19: return \"陽盛 (午)\"\n",
+        "        else: return \"陰虛 (晚)\"\n",
+        "    df[\"時段\"] = df[\"Hour\"].apply(get_period)\n",
+        "\n",
+        "    zodiac = [\"子\", \"丑\", \"寅\", \"卯\", \"辰\", \"巳\", \"午\", \"未\", \"申\", \"酉\", \"戌\", \"亥\"]\n",
+        "    df[\"時辰\"] = df[\"Hour\"].apply(lambda h: f\"{zodiac[(h+1)//2%12]}時\")\n",
+        "\n",
+        "    # 強度分級\n",
+        "    mx = df[\"信眾靈壓\"].max()\n",
+        "    df[\"強度\"] = df[\"信眾靈壓\"].apply(lambda t: \"🟥 極高\" if t > mx*0.8 else (\"🟨 中庸\" if t > mx*0.5 else \"⬛ 微弱\"))\n",
+        "\n",
+        "    return df\n",
+        "\n",
+        "def plot_cyber_bar(df, x_col, y_col, title, unit_label):\n",
+        "    plt.style.use('dark_background')\n",
+        "    fig, ax = plt.subplots(figsize=(8, 4))\n",
+        "\n",
+        "    max_idx = df[y_col].idxmax()\n",
+        "    colors = ['#333333'] * len(df)\n",
+        "    colors[max_idx] = '#ff0055'\n",
+        "\n",
+        "    ax.bar(df[x_col], df[y_col], color=colors)\n",
+        "\n",
+        "    # 標題與字型\n",
+        "    ax.set_title(f\"// {title} //\", color='#00ff41', fontsize=14, fontproperties=font_prop)\n",
+        "\n",
+        "    # 設定 Y 軸單位標籤\n",
+        "    ax.set_ylabel(f\"單位：{unit_label}\", color='#888', fontproperties=font_prop)\n",
+        "\n",
+        "    # 標示最大值 (含單位)\n",
+        "    peak_x = df.iloc[max_idx][x_col]\n",
+        "    peak_y = df.iloc[max_idx][y_col]\n",
+        "\n",
+        "    # 根據數值大小決定小數位\n",
+        "    val_str = f\"{int(peak_y):,}\" if peak_y > 100 else f\"{peak_y:.1f}\"\n",
+        "\n",
+        "    ax.text(peak_x, peak_y + (peak_y*0.05), f\"MAX: {val_str} {unit_label}\",\n",
+        "            ha='center', color='#ff0055', fontweight='bold', fontproperties=font_prop)\n",
+        "\n",
+        "    ax.spines['top'].set_visible(False)\n",
+        "    ax.spines['right'].set_visible(False)\n",
+        "    ax.tick_params(colors='#888')\n",
+        "    return fig\n",
+        "\n",
+        "def plot_cyber_pie(df_grouped, title):\n",
+        "    plt.style.use('dark_background')\n",
+        "    fig, ax = plt.subplots(figsize=(4, 4))\n",
+        "\n",
+        "    max_idx = df_grouped.idxmax()\n",
+        "    labels = df_grouped.index\n",
+        "    colors = ['#ff0055' if l == max_idx else '#444444' for l in labels]\n",
+        "    explode = [0.1 if l == max_idx else 0 for l in labels]\n",
+        "\n",
+        "    wedges, texts, autotexts = ax.pie(df_grouped, labels=labels, autopct='%1.1f%%',\n",
+        "                                      colors=colors, explode=explode, startangle=90)\n",
+        "\n",
+        "    for t in texts:\n",
+        "        t.set_fontproperties(font_prop)\n",
+        "        t.set_color('#cccccc')\n",
+        "    for at in autotexts: at.set_color('white')\n",
+        "\n",
+        "    ax.set_title(f\"// {title} //\", color='#00ff41', fontproperties=font_prop)\n",
+        "    return fig\n",
+        "\n",
+        "# ==========================================\n",
+        "# 🖥️ 介面組裝\n",
+        "# ==========================================\n",
+        "st.title(\"🐯 天機・虎爺矩陣 (CYBER ORACLE)\")\n",
+        "\n",
+        "# --- Part 1: 扭蛋機 (高畫質版) ---\n",
+        "st.subheader(\"🧧 線上求錢母 (Gacha)\")\n",
+        "col1, col2 = st.columns([1, 2])\n",
+        "with col1:\n",
+        "    st.image(\"https://cdn-icons-png.flaticon.com/512/4081/4081966.png\", width=120)\n",
+        "    cheat = st.checkbox(\"必中 SSR\")\n",
+        "with col2:\n",
+        "    if st.button(\"🙏 啟動靈力 (Shake)\", type=\"primary\", use_container_width=True):\n",
+        "        with st.spinner(\"🔮 讀取天機中...\"):\n",
+        "            time.sleep(1)\n",
+        "            res = get_gacha_result(100 if cheat else np.random.randint(0, 101))\n",
+        "\n",
+        "            if res['tier'] == 'SSR': st.balloons()\n",
+        "            elif res['tier'] == 'SR': st.snow()\n",
+        "\n",
+        "            st.success(f\"**【{res['tier']}】** {res['name']}\")\n",
+        "            st.write(res['msg'])\n",
+        "\n",
+        "            # 圖片顯示修正：使用 use_container_width=True 解放畫質\n",
+        "            if not res['asset'].startswith(\"http\"):\n",
+        "                if os.path.exists(res['asset']):\n",
+        "                    st.image(res['asset'], caption=res['name'], use_container_width=True)\n",
+        "                else:\n",
+        "                    st.error(f\"❌ 圖片遺失：{res['asset']}\")\n",
+        "                    st.info(\"⚠️ 請確認已將虎爺圖片上傳至 Colab 左側檔案區！\")\n",
+        "            else:\n",
+        "                st.image(res['asset'], width=150)\n",
+        "\n",
+        "st.markdown(\"---\")\n",
+        "\n",
+        "# --- Part 2: 戰情室 (含單位) ---\n",
+        "st.header(\"📊 靈壓戰情室 (Dashboard)\")\n",
+        "df = generate_cyber_data()\n",
+        "\n",
+        "# 繪圖區\n",
+        "c1, c2 = st.columns(2)\n",
+        "with c1:\n",
+        "    # 靈壓 (人)\n",
+        "    gp_t = df.groupby(\"時段\")[\"信眾靈壓\"].sum()\n",
+        "    st.pyplot(plot_cyber_pie(gp_t, \"時段靈壓佔比\"))\n",
+        "    st.markdown(\"####\") # 間距\n",
+        "    st.pyplot(plot_cyber_bar(df, \"Hour\", \"信眾靈壓\", \"十二時辰靈壓走勢\", \"人\"))\n",
+        "\n",
+        "with c2:\n",
+        "    # 功德 (萬)\n",
+        "    gp_m = df.groupby(\"時段\")[\"功德金_Raw\"].sum()\n",
+        "    st.pyplot(plot_cyber_pie(gp_m, \"時段功德佔比\"))\n",
+        "    st.markdown(\"####\") # 間距\n",
+        "    st.pyplot(plot_cyber_bar(df, \"Hour\", \"功德金_Raw\", \"十二時辰功德走勢\", \"萬元\"))\n",
+        "\n",
+        "st.markdown(\"---\")\n",
+        "st.subheader(\"🏆 黃金時辰榜 (Top 3)\")\n",
+        "\n",
+        "# 表格區 (顯示有單位的欄位)\n",
+        "top3 = df.nlargest(3, \"信眾靈壓\")[[\"時辰\", \"強度\", \"靈壓(人)\", \"功德(萬)\"]]\n",
+        "\n",
+        "def highlight_first(row):\n",
+        "    # 第一名霓虹紅，其他深灰\n",
+        "    color = '#ff0055' if row.name == top3.index[0] else '#888'\n",
+        "    bg = '#330011' if row.name == top3.index[0] else '#111'\n",
+        "    font_weight = 'bold' if row.name == top3.index[0] else 'normal'\n",
+        "    return [f'background-color: {bg}; color: {color}; font-weight: {font_weight}']*len(row)\n",
+        "\n",
+        "st.dataframe(\n",
+        "    top3.style.apply(highlight_first, axis=1),\n",
+        "    use_container_width=True,\n",
+        "    hide_index=True\n",
+        ")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "cnX-e63yC5JM",
+        "outputId": "f5a2d171-efe8-4172-afe4-78af2f97640d"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Overwriting app.py\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "import os\n",
+        "import time\n",
+        "\n",
+        "!pkill cloudflared\n",
+        "!pkill streamlit\n",
+        "\n",
+        "if not os.path.exists(\"cloudflared\"):\n",
+        "    !wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64\n",
+        "    !chmod +x cloudflared\n",
+        "\n",
+        "print(\"🚀 啟動高畫質戰情室...\")\n",
+        "!nohup ./cloudflared tunnel --url http://localhost:8501 > tunnel.log 2>&1 &\n",
+        "\n",
+        "time.sleep(5)\n",
+        "print(\"\\n👇👇👇 您的專屬連結 👇👇👇\")\n",
+        "!grep -o 'https://.*\\.trycloudflare.com' tunnel.log\n",
+        "!streamlit run app.py"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zwMFNETWFSNF",
+        "outputId": "b435faac-8bb8-4458-94f4-9c0a2a5b3ce1"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "🚀 啟動高畫質戰情室...\n",
+            "\n",
+            "👇👇👇 您的專屬連結 👇👇👇\n",
+            "https://grateful-developers-herald-are.trycloudflare.com\n",
+            "\n",
+            "Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.\n",
+            "\u001b[0m\n",
+            "\u001b[0m\n",
+            "\u001b[34m\u001b[1m  You can now view your Streamlit app in your browser.\u001b[0m\n",
+            "\u001b[0m\n",
+            "\u001b[34m  Local URL: \u001b[0m\u001b[1mhttp://localhost:8501\u001b[0m\n",
+            "\u001b[34m  Network URL: \u001b[0m\u001b[1mhttp://172.28.0.12:8501\u001b[0m\n",
+            "\u001b[34m  External URL: \u001b[0m\u001b[1mhttp://34.55.201.31:8501\u001b[0m\n",
+            "\u001b[0m\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "2026-02-04 06:13:01.905 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "2026-02-04 06:13:06.651 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "2026-02-04 06:13:07.655 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "2026-02-04 06:13:21.172 MediaFileHandler: Missing file c0529c2ae58d84ec8cc67569928a5f67e274bbd57d663d6ac9add3f1.png\n",
+            "Traceback (most recent call last):\n",
+            "  File \"/usr/local/lib/python3.12/dist-packages/streamlit/runtime/memory_media_file_storage.py\", line 152, in get_file\n",
+            "    return self._files_by_id[file_id]\n",
+            "           ~~~~~~~~~~~~~~~~~^^^^^^^^^\n",
+            "KeyError: 'c0529c2ae58d84ec8cc67569928a5f67e274bbd57d663d6ac9add3f1'\n",
+            "\n",
+            "The above exception was the direct cause of the following exception:\n",
+            "\n",
+            "Traceback (most recent call last):\n",
+            "  File \"/usr/local/lib/python3.12/dist-packages/streamlit/web/server/media_file_handler.py\", line 95, in validate_absolute_path\n",
+            "    self._storage.get_file(absolute_path)\n",
+            "  File \"/usr/local/lib/python3.12/dist-packages/streamlit/runtime/memory_media_file_storage.py\", line 154, in get_file\n",
+            "    raise MediaFileStorageError(\n",
+            "streamlit.runtime.media_file_storage.MediaFileStorageError: Bad filename 'c0529c2ae58d84ec8cc67569928a5f67e274bbd57d663d6ac9add3f1.png'. (No media file with id 'c0529c2ae58d84ec8cc67569928a5f67e274bbd57d663d6ac9add3f1')\n",
+            "2026-02-04 06:13:22.137 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "findfont: Font family 'Noto Sans CJK TC' not found.\n",
+            "2026-02-04 06:13:23.161 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "\u001b[34m  Stopping...\u001b[0m\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
