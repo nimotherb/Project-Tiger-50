@@ -164,7 +164,7 @@ st.title("🐯 天機・虎爺矩陣 (CYBER ORACLE)")
 st.subheader("🧧 啟動靈力連結 (Gacha)")
 col1, col2 = st.columns([1, 2])
 with col1:
-    st.image("https://cdn-icons-png.flaticon.com/512/4081/4081966.png", width=120)
+    # 🌟 已經把 st.image 這行咒語移除了，只留下必中 SSR 勾選框
     cheat = st.checkbox("必中 SSR")
 with col2:
     if st.button("🙏 誠心祈求 (Shake)", type="primary", use_container_width=True):
